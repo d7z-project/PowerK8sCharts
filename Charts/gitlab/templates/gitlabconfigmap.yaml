@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conf-{{.Release.Name}}
+  namespace: {{.Release.Namespace}}
+data:
+
+  HOST: "{{.Values.gitlab.host}}"
+  {{- if .Values.gitlab.pages.enabled }}
+  PAGES_HOST: pages.{{.Values.gitlab.pages.host}}
+  {{ end }}
+  ############# LDAP Config
+  {{- if .Values.gitlab.ldap.enabled }}
+  LDAP_USERS_FILTER: '{{.Values.gitlab.ldap.usersFilter}}' # <4>
+  {{ end }}
+  ############ DB/Redis Config
+  {{- with .Values.database}}
+  DB_NAME: "{{.database}}"
+  POSTGRES_USER: "{{.username}}"
+  DB_USER: "{{.username}}"
+  {{- end }}

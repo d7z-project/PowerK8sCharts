@@ -1,0 +1,38 @@
+image:
+  # docker.io
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+  images:
+    gitlab: sameersbn/gitlab
+    redis: library/redis:6.2
+    postgres: library/postgres:14
+
+gitlab:
+  host: gitlab.powerk8s.cn
+  secrets:
+    defaultPassword: gitlab-root-password
+    dbSecrets: long-and-random-alpha-numeric-string
+    sessionSecrets: long-and-random-alpha-numeric-string
+    otpSecrets: long-and-random-alpha-numeric-string
+    pagesSecrets: long-and-random-alpha-numeric-string
+  pages:
+    enabled: true
+    host: public.powerk8s.cn
+  registry:
+    enabled: true
+    host: registry.powerk8s.cn
+  ldap:
+    enabled: false
+    host: 127.0.0.1
+    port: 389
+    uidColum: uid
+    AD: false
+    tls: false
+    bindDN: cn=service-account,dc=cluster,dc=local
+    bindDNPassword: service-account
+    usersDN: ou=people,dc=cluster,dc=local
+    usersFilter: (|(memberOf=cn=admin,ou=groups,dc=cluster,dc=local)(memberOf=cn=develop,ou=groups,dc=cluster,dc=local))
+database:
+  database: gitlabhq_production
+  username: gitlab
+  password: gitlab
