@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: res-{{include "ldap.name" .}}-schema
+  namespace: {{.Release.Namespace}}
+data:
+  schema.ldif: |
+    dn: cn=module,cn=config
+    cn: module
+    objectClass: olcModuleList
+    olcModulePath: /opt/bitnami/openldap/lib/openldap
+    olcModuleLoad: memberof.so
+    olcModuleLoad: refint.so
+
+    dn: olcOverlay=memberof,olcDatabase={2}mdb,cn=config
+    objectClass: olcMemberOf
+    objectClass: olcOverlayConfig
+    olcOverlay: memberof
+
+    dn: olcOverlay=refint,olcDatabase={2}mdb,cn=config
+    objectClass: olcConfig
+    objectClass: olcOverlayConfig
+    objectClass: olcRefintConfig
+    objectClass: top
+    olcOverlay: refint
+    olcRefintAttribute: memberof member manager owner
+---
+  {{with .Values.ldap.init}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: res-{{- include "ldap.name" $}}-init
+  namespace: {{$.Release.Namespace}}
+stringData:
+  02-top.ldif: |
+    dn: {{.root}}
+    objectClass: top
+    objectClass: dcObject
+    objectClass: organization
+    o: cluster local
+    dc: cluster
+
+    dn: ou={{- .peopleName}},{{- .root}}
+    objectClass: organizationalUnit
+    description: LDAP系统角色分组
+    ou: people
+
+    dn: ou={{- .groupName}},{{- .root}}
+    objectClass: organizationalUnit
+    description: LDAP集群用户分组
+    ou: groups
+    {{with .serviceAccount }}
+    dn: cn={{.uid}},{{- $.Values.ldap.init.root}}
+    cn: {{.uid}}
+    description: Bind DN 账户，用于查询LDAP服务器内部信息
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    userPassword: {{- .password}}
+  {{end}}
+  {{ with $user := .defaultUser }}
+  03-admin.ldif: |
+    dn: uid={{$user.uid}},ou={{- $.Values.ldap.init.peopleName}},{{- $.Values.ldap.init.root}}
+    cn: {{$user.uid}}
+    sn: {{$user.uid}}
+    uid: {{$user.uid}}
+    description: 系统自动创建的默认管理员用户
+    objectClass: inetOrgPerson
+    objectClass: organizationalPerson
+    objectClass: person
+    mail: {{$user.uid}}@{{- $.Values.ldap.init.domain }}
+    userPassword: {{$user.defaultPassword}}
+  {{end}}
+  04-groups.ldif: |
+    {{- range .group }}
+    dn: cn={{.id}},ou={{- $.Values.ldap.init.groupName}},{{- $.Values.ldap.init.root}}
+    cn: {{.id}}
+    {{- if .describe }}
+    description: {{.describe}}
+    {{- end }}
+    member: uid={{$.Values.ldap.init.defaultUser.uid}},ou={{- $.Values.ldap.init.peopleName}},{{- $.Values.ldap.init.root}}
+    objectClass: groupOfNames
+    {{end}}
+  {{end}}

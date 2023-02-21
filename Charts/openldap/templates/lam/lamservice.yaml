@@ -1,0 +1,14 @@
+{{ if .Values.ldap.lam.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-{{include "ldap.name" .}}-lam
+  namespace: {{.Release.Namespace}}
+spec:
+  ports:
+    - name: "web"
+      port: 80
+      targetPort: 80
+  selector:
+    app: "{{- include "ldap.name" . }}-lam"
+  {{end}}

@@ -1,0 +1,101 @@
+image:
+  # ghcr.io
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+  images:
+    # TODO: https://github.com/kubernetes-sigs/nfs-ganesha-server-and-external-provisioner/issues/115
+    nfs_provisioner: sig-storage/nfs-provisioner:v3.0.1
+service:
+  type: ClusterIP
+
+  nfsPort: 2049
+  nlockmgrPort: 32803
+  mountdPort: 20048
+  rquotadPort: 875
+  rpcbindPort: 111
+  statdPort: 662
+  # nfsNodePort:
+  # nlockmgrNodePort:
+  # mountdNodePort:
+  # rquotadNodePort:
+  # rpcbindNodePort:
+  # statdNodePort:
+  # clusterIP:
+
+
+
+persistence:
+  enabled: false
+  # 选择本地可用节点
+  nodeName: node-01
+  nodeHostPath: /share
+  capacity: 2000Gi
+  accessMode: ReadWriteOnce
+
+## For creating the StorageClass automatically:
+storageClass:
+  create: true
+
+  ## Set a provisioner name. If unset, a name will be generated.
+  # provisionerName:
+
+  ## Set StorageClass as the default StorageClass
+  ## Ignored if storageClass.create is false
+  defaultClass: true
+
+  ## Set a StorageClass name
+  ## Ignored if storageClass.create is false
+  name: nfs
+
+  # set to null to prevent expansion
+  allowVolumeExpansion: true
+  ## StorageClass parameters
+  parameters: { }
+
+  mountOptions:
+    - vers=3
+    - retrans=2
+    - timeo=30
+
+  ## ReclaimPolicy field of the class, which can be either Delete or Retain
+  reclaimPolicy: Delete
+
+## For RBAC support:
+rbac:
+  create: true
+
+  ## Ignored if rbac.create is true
+  ##
+  serviceAccountName: default
+
+securityContext:
+  capabilities:
+    add:
+      - DAC_READ_SEARCH
+      - SYS_RESOURCE
+
+## For creating the PriorityClass automatically:
+priorityClass:
+  ## Enable creation of a PriorityClass resource for this nfs-server-provisioner instance
+  create: true
+
+  ## Set a PriorityClass name to override the default name
+  name: ""
+
+  ## PriorityClass value. The higher the value, the higher the scheduling priority
+  value: 5
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: { }
+
+tolerations:
+
+
+affinity: { }

@@ -1,0 +1,18 @@
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{- include "ldap.name" . }}
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: ldap
+spec:
+  {{- if .Values.persistence.storageClass}}
+  storageClassName: {{.Values.persistence.storageClass}}
+  {{- end}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.persistence.capacity}}
+  {{- end}}

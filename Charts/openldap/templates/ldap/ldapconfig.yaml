@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conf-{{- include "ldap.name" .}}
+  namespace: {{ .Release.Namespace }}
+data:
+  LDAP_PORT_NUMBER: "1389"
+  LDAP_CUSTOM_SCHEMA_FILE: "/bootstrap/schema.ldif"
+  LDAP_CUSTOM_LDIF_DIR: "/custom"
+  LDAP_SKIP_DEFAULT_TREE: "yes"
+  LDAP_ALLOW_ANON_BINDING: "no"
+  {{- with .Values.ldap.init }}
+  LDAP_ROOT: "{{.root}}"
+  LDAP_ADMIN_DN: "cn={{.admin.uid}},{{.root}}"
+  LDAP_ADMIN_USERNAME: "{{.admin.uid}}"
+  {{- end}}

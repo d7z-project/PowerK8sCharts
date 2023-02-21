@@ -1,0 +1,36 @@
+{{ if .Values.ldap.lam.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sts-{{- include "ldap.name" .}}-lam
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: lam
+spec:
+  replicas: 1
+  serviceName: svc-{{- include "ldap.name" .}}-lam
+  selector:
+    matchLabels:
+      app: "{{- include "ldap.name" . -}}-lam"
+  template:
+    metadata:
+      labels:
+        app: "{{- include "ldap.name" . -}}-lam"
+    spec:
+      containers:
+        - name: "{{- include "ldap.name" . -}}-lam"
+          image: {{.Values.image.repository}}/{{.Values.image.images.lam}}
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: conf-{{- include "ldap.name" . }}-lam
+            - secretRef:
+                name: secret-{{- include "ldap.name" . }}-lam
+          env:
+            - name: LDAP_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: LDAP_ADMIN_DN
+                  name: conf-{{- include "ldap.name" . }}
+  {{end}}

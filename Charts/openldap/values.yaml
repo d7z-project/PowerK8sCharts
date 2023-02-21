@@ -1,0 +1,49 @@
+image:
+  # docker.io
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+  images:
+    openldap: bitnami/openldap:2.6
+    lam: ldapaccountmanager/lam:8.1
+
+persistence:
+  enabled: false
+  storageClass:
+  capacity: 10Gi
+
+ldap:
+  init:
+    root: dc=cluster,dc=local
+    domain: cluster.local
+    peopleName: peoples
+    groupName: groups
+    serviceAccount:
+      uid: service-account
+      password: service-account
+    admin:
+      uid: admin
+      defaultPassword: admin
+    defaultUser:
+      uid: default
+      defaultPassword: default
+    group:
+      - id: admin
+        describe: 管理员角色
+      - id: oci
+        describe: 镜像操作员角色
+      - id: develop
+        describe: 项目开发者角色
+      - id: library
+        describe: 依赖库管理角色
+      - id: package
+        describe: 软件包管理角色
+      - id: monitor
+        describe: 集群监控管理角色
+  lam:
+    enabled: false
+    password: admin
+    ingress:
+      enabled: false
+      ingressClass: nginx
+      host: account.powerk8s.cn
+      TlsSecret: tls-pri

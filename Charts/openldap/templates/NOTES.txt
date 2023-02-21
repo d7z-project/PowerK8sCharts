@@ -1,0 +1,3 @@
+{{.Release.Namespace}} 安装完成。
+默认管理员密码为 : {{.Values.ldap.init.admin.defaultPassword}}
+默认密码以明文存储！请在安装完成后立即更改管理员密码和用户密码！

@@ -1,0 +1,16 @@
+{{ if .Values.ldap.lam.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conf-{{- include "ldap.name" .}}-lam
+  namespace: {{ .Release.Namespace }}
+data:
+  LAM_SKIP_PRCONFIGURE: "true"
+  LDAP_DOMAIN: "{{.Values.ldap.init.domain}}"
+  LDAP_SERVER: "ldap://svc-{{include "ldap.name" .}}"
+  LDAP_BASE_DN: "{{.Values.ldap.init.root}}"
+  LDAP_USERS_DN: "ou={{.Values.ldap.init.peopleName}},{{.Values.ldap.init.root}}"
+  LDAP_GROUPS_DN: "ou={{.Values.ldap.init.groupName}},{{.Values.ldap.init.root}}"
+  LAM_LANG: "zh_CN"
+  LAM_PASSWORD: "{{.Values.ldap.lam.password}}"
+{{ end }}

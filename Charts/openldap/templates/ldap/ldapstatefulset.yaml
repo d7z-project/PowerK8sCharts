@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sts-{{- include "ldap.name" .}}
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: ldap
+spec:
+  serviceName: svc-ldap
+  selector:
+    matchLabels:
+      app: "{{- include "ldap.name" .}}"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "{{- include "ldap.name" .}}"
+    spec:
+      containers:
+        - name: ldap-core
+          image: {{.Values.image.repository}}/{{.Values.image.images.openldap}}
+          imagePullPolicy: {{.Values.image.pullPolicy}}
+          volumeMounts:
+            - name: ldap-data
+              mountPath: /bitnami/openldap
+            - name: ldap-schema
+              mountPath: /bootstrap
+            - name: ldap-init
+              mountPath: /custom
+          ports:
+            - containerPort: 1389
+              name: openldap
+          envFrom:
+            - secretRef:
+                name: secret-{{include "ldap.name" . }}
+            - configMapRef:
+                name: conf-{{- include "ldap.name" . }}
+      volumes:
+        - name: ldap-data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: pvc-{{- include "ldap.name" . }}
+          {{- else}}
+          emptyDir: { }
+          {{- end }}
+        - name: ldap-schema
+          configMap:
+            name: res-{{- include "ldap.name" .}}-schema
+        - name: ldap-init
+          secret:
+            secretName: res-{{- include "ldap.name" .}}-init

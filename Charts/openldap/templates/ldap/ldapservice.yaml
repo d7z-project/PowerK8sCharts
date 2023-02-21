@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-{{include "ldap.name" .}}
+  namespace: {{.Release.Namespace}}
+spec:
+  ports:
+    - port: 389
+      targetPort: 1389
+  selector:
+    app: "{{- include "ldap.name" .}}"

@@ -1,0 +1,63 @@
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-{{ include "nfs-provisioner.name" . }}-local
+  labels:
+    app: {{ include "nfs-provisioner.name" . }}
+    chart: {{ include "nfs-provisioner.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: {{.Values.persistence.capacity}}
+  local:
+    path: {{.Values.persistence.nodeHostPath}}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+               - {{ .Values.persistence.nodeName  }}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: sc-{{ include "nfs-provisioner.name" . }}-local
+  volumeMode: Filesystem
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: sc-{{ include "nfs-provisioner.name" . }}-local
+  labels:
+    app: {{ include "nfs-provisioner.name" . }}
+    chart: {{ include "nfs-provisioner.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+provisioner: kubernetes.io/no-provisioner
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{ include "nfs-provisioner.name" . }}-local
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: {{ include "nfs-provisioner.name" . }}
+    chart: {{ include "nfs-provisioner.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.persistence.capacity}}
+  storageClassName: sc-{{ include "nfs-provisioner.name" . }}-local
+  volumeMode: Filesystem
+  volumeName: pv-{{ include "nfs-provisioner.name" . }}-local
+
+  {{- end}}
