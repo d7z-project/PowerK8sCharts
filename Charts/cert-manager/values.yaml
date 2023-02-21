@@ -1,11 +1,17 @@
+image:
+  # quay.io
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+  images:
+    controller: jetstack/cert-manager-controller
+    acmeSolver: jetstack/cert-manager-acmesolver
+    cainjector: jetstack/cert-manager-cainjector
+    webhook: jetstack/cert-manager-webhook
+    ctl: jetstack/cert-manager-ctl
 # Default values for cert-manager.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 global:
-  # Reference to one or more secrets to be used when pulling images
-  # ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  imagePullSecrets: []
-  # - name: "image-pull-secret"
 
   # Labels to apply to all resources
   # Please note that this does not add labels to the resources created dynamically by the controllers.
@@ -29,7 +35,7 @@ global:
     useAppArmor: true
 
   # Set the verbosity of cert-manager. Range of 0 - 6 with 6 being the most verbose.
-  logLevel: 2
+  logLevel: 0
 
   leaderElection:
     # Override the namespace used for the leader election lease
@@ -50,7 +56,7 @@ global:
     # renewal of a leadership.
     # retryPeriod: 15s
 
-installCRDs: false
+installCRDs: true
 
 replicaCount: 1
 
@@ -66,20 +72,6 @@ featureGates: ""
 
 # The maximum number of challenges that can be scheduled as 'processing' at once
 maxConcurrentChallenges: 60
-
-image:
-  repository: quay.io/jetstack/cert-manager-controller
-  # You can manage a registry with
-  # registry: quay.io
-  # repository: jetstack/cert-manager-controller
-
-  # Override the image tag to deploy by setting this variable.
-  # If no value is set, the chart's appVersion will be used.
-  # tag: canary
-
-  # Setting a digest will override any tag
-  # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
-  pullPolicy: IfNotPresent
 
 # Override the namespace used to store DNS provider credentials etc. for ClusterIssuer
 # resources. By default, the same namespace as cert-manager is deployed within is
@@ -332,21 +324,6 @@ webhook:
   # Optional additional labels to add to the Webhook Service
   serviceLabels: {}
 
-  image:
-    repository: quay.io/jetstack/cert-manager-webhook
-    # You can manage a registry with
-    # registry: quay.io
-    # repository: jetstack/cert-manager-webhook
-
-    # Override the image tag to deploy by setting this variable.
-    # If no value is set, the chart's appVersion will be used.
-    # tag: canary
-
-    # Setting a digest will override any tag
-    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
-
-    pullPolicy: IfNotPresent
-
   serviceAccount:
     # Specifies whether a service account should be created
     create: true
@@ -470,20 +447,6 @@ cainjector:
   # Optional additional labels to add to the CA Injector Pods
   podLabels: {}
 
-  image:
-    repository: quay.io/jetstack/cert-manager-cainjector
-    # You can manage a registry with
-    # registry: quay.io
-    # repository: jetstack/cert-manager-cainjector
-
-    # Override the image tag to deploy by setting this variable.
-    # If no value is set, the chart's appVersion will be used.
-    # tag: canary
-
-    # Setting a digest will override any tag
-    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
-
-    pullPolicy: IfNotPresent
 
   serviceAccount:
     # Specifies whether a service account should be created
@@ -501,19 +464,6 @@ cainjector:
   # Automounting API credentials for a particular pod
   # automountServiceAccountToken: true
 
-acmesolver:
-  image:
-    repository: quay.io/jetstack/cert-manager-acmesolver
-    # You can manage a registry with
-    # registry: quay.io
-    # repository: jetstack/cert-manager-acmesolver
-
-    # Override the image tag to deploy by setting this variable.
-    # If no value is set, the chart's appVersion will be used.
-    # tag: canary
-
-    # Setting a digest will override any tag
-    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
 
 # This startupapicheck is a Helm post-install hook that waits for the webhook
 # endpoints to become available.
@@ -575,21 +525,6 @@ startupapicheck:
 
   # Optional additional labels to add to the startupapicheck Pods
   podLabels: {}
-
-  image:
-    repository: quay.io/jetstack/cert-manager-ctl
-    # You can manage a registry with
-    # registry: quay.io
-    # repository: jetstack/cert-manager-ctl
-
-    # Override the image tag to deploy by setting this variable.
-    # If no value is set, the chart's appVersion will be used.
-    # tag: canary
-
-    # Setting a digest will override any tag
-    # digest: sha256:0e072dddd1f7f8fc8909a2ca6f65e76c5f0d2fcfb8be47935ae3457e8bbceb20
-
-    pullPolicy: IfNotPresent
 
   rbac:
     # annotations for the startup API Check job RBAC and PSP resources

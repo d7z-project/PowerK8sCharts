@@ -56,10 +56,10 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-webhook
-          {{- with .Values.webhook.image }}
-          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .repository }}{{- if (.digest) -}} @{{ .digest }}{{- else -}}:{{ default $.Chart.AppVersion .tag }} {{- end -}}"
+          {{- with .Values.image }}
+          image: "{{.repository}}/{{.images.webhook}}:{{$.Chart.AppVersion}}"
+          imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
-          imagePullPolicy: {{ .Values.webhook.image.pullPolicy }}
           args:
           {{- if .Values.global.logLevel }}
           - --v={{ .Values.global.logLevel }}

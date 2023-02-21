@@ -65,9 +65,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-controller
-          {{- with .Values.image }}
-          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .repository }}{{- if (.digest) -}} @{{ .digest }}{{- else -}}:{{ default $.Chart.AppVersion .tag }} {{- end -}}"
-          {{- end }}
+          image: "{{.Values.image.repository}}/{{.Values.image.images.controller}}:{{.Chart.AppVersion}}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
           {{- if .Values.global.logLevel }}
@@ -90,9 +88,7 @@ spec:
           - --leader-election-retry-period={{ .retryPeriod }}
           {{- end }}
           {{- end }}
-          {{- with .Values.acmesolver.image }}
-          - --acme-http01-solver-image={{- if .registry -}}{{ .registry }}/{{- end -}}{{ .repository }}{{- if (.digest) -}} @{{ .digest }}{{- else -}}:{{ default $.Chart.AppVersion .tag }} {{- end -}}
-          {{- end }}
+          - "--acme-http01-solver-image={{.Values.image.repository}}/{{.Values.image.images.acmeSolver}}:{{.Chart.AppVersion}}"
           {{- with .Values.extraArgs }}
           {{- toYaml . | nindent 10 }}
           {{- end }}

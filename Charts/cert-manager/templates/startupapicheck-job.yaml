@@ -43,14 +43,14 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-startupapicheck
-          {{- with .Values.startupapicheck.image }}
-          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .repository }}{{- if (.digest) -}} @{{ .digest }}{{- else -}}:{{ default $.Chart.AppVersion .tag }} {{- end -}}"
+          {{- with .Values.image}}
+          image: "{{.repository}}/{{.images.ctl}}:{{$.Chart.AppVersion}}"
+          imagePullPolicy: {{ .pullPolicy}}
           {{- end }}
-          imagePullPolicy: {{ .Values.startupapicheck.image.pullPolicy }}
           args:
-          - check
-          - api
-          - --wait={{ .Values.startupapicheck.timeout }}
+            - check
+            - api
+            - --wait={{ .Values.startupapicheck.timeout }}
           {{- with .Values.startupapicheck.extraArgs }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
