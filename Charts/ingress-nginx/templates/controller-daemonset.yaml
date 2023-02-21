@@ -64,8 +64,8 @@ spec:
     {{- if .Values.controller.sysctls }}
         sysctls:
     {{- range $sysctl, $value := .Values.controller.sysctls }}
-        - name: {{ $sysctl | quote }}
-          value: {{ $value | quote }}
+          - name: {{ $sysctl | quote }}
+            value: {{ $value | quote }}
     {{- end }}
     {{- end }}
     {{- if .Values.controller.shareProcessNamespace }}
@@ -73,10 +73,10 @@ spec:
     {{- end }}
       containers:
         - name: {{ .Values.controller.containerName }}
-          {{- with .Values.controller.image }}
-          image: "{{- if .repository -}}{{ .repository }}{{ else }}{{ .registry }}/{{ include "ingress-nginx.image" . }}{{- end -}}:{{ .tag }}{{ include "ingress-nginx.imageDigest" . }}"
+          {{- with .Values.image }}
+          image: "{{.repository}}/{{.images.controller}}"
+          imagePullPolicy: {{ .pullPolicy }}
           {{- end }}
-          imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
         {{- if .Values.controller.lifecycle }}
           lifecycle: {{ toYaml .Values.controller.lifecycle | nindent 12 }}
         {{- end }}
@@ -178,15 +178,15 @@ spec:
       {{- end }}
       {{- if .Values.controller.extraModules }}
         {{- range .Values.controller.extraModules }}
-          - name: {{ .Name }}
-            image: {{ .Image }}
-            command: ['sh', '-c', '/usr/local/bin/init_module.sh']
+        - name: {{ .Name }}
+          image: {{ .Image }}
+          command: [ 'sh', '-c', '/usr/local/bin/init_module.sh' ]
             {{- if (or $.Values.controller.containerSecurityContext .containerSecurityContext) }}
-            securityContext: {{ .containerSecurityContext | default $.Values.controller.containerSecurityContext | toYaml | nindent 14 }}
+          securityContext: {{ .containerSecurityContext | default $.Values.controller.containerSecurityContext | toYaml | nindent 14 }}
             {{- end }}
-            volumeMounts:
-              - name: modules
-                mountPath: /modules_mount
+          volumeMounts:
+            - name: modules
+              mountPath: /modules_mount
         {{- end }}
       {{- end }}
     {{- end }}
@@ -211,15 +211,15 @@ spec:
       volumes:
       {{- if .Values.controller.extraModules }}
         - name: modules
-          emptyDir: {}
+          emptyDir: { }
       {{- end }}
       {{- if .Values.controller.customTemplate.configMapName }}
         - name: nginx-template-volume
           configMap:
             name: {{ .Values.controller.customTemplate.configMapName }}
             items:
-            - key: {{ .Values.controller.customTemplate.configMapKey }}
-              path: nginx.tmpl
+              - key: {{ .Values.controller.customTemplate.configMapKey }}
+                path: nginx.tmpl
       {{- end }}
       {{- if .Values.controller.admissionWebhooks.enabled }}
         - name: webhook-cert
