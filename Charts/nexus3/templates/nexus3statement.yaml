@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sts-{{ include "nexus3.name" . }}
+  namespace: {{.Release.Namespace}}
+  labels:
+    {{- include "nexus3.labels" . | nindent 4 }}
+spec:
+  serviceName: svc-{{ include "nexus3.name" .}}
+  selector:
+    matchLabels:
+      {{- include "nexus3.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+      {{- include "nexus3.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: nexus
+          image: "{{ include "nexus.image.nexus" . }}"
+          imagePullPolicy: "{{.Values.image.pullPolicy}}"
+          resources:
+            requests:
+              memory: 3Gi
+          volumeMounts:
+            - name: nexus-data
+              mountPath: /nexus-data
+          env:
+            - name: INSTALL4J_ADD_VM_PARAMS
+              value: "-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=${NEXUS_DATA}/javaprefs"
+          ports:
+            - containerPort: 8081
+              hostPort: 8081
+              name: panel
+          startupProbe:
+            httpGet:
+              port: panel
+              path: /service/rest/v1/status
+            failureThreshold: 60
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: panel
+              path: /service/rest/v1/status
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            failureThreshold: 5
+        - name: nginx
+          image: "{{ include "nexus.image.nginx" . }}"
+          imagePullPolicy: "{{.Values.image.pullPolicy}}"
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d/
+      volumes:
+        - name: nexus-data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: pvc-{{include "nexus3.name" $ }}
+        {{- else}}
+          emptyDir: {}
+        {{- end }}
+        - name: nginx-conf
+          configMap:
+            name: res-{{include "nexus3.name" $ }}-nginx

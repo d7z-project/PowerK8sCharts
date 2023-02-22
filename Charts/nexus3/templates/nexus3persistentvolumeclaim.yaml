@@ -1,0 +1,20 @@
+{{- if .Values.persistence.enabled}}
+{{- with .Values.persistence}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{include "nexus3.name" $ }}
+  namespace: {{$.Release.Namespace}}
+  labels:
+    {{- include "nexus3.labels" $ | nindent 4 }}
+spec:
+  {{- with .storageClass }}
+  storageClassName: '{{.}}'
+  {{- end }}
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{.capacity}}
+  {{- end}}
+  {{- end}}

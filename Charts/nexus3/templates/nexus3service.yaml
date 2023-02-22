@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "nexus3.labels" . | nindent 4 }}
+  name: svc-{{ include "nexus3.name" .}}
+  namespace: {{.Release.Namespace}}
+spec:
+  ports:
+    - name: panel
+      protocol: TCP
+      port: 80
+    - name: docker
+      protocol: TCP
+      port: 81
+    - name: repos
+      protocol: TCP
+      port: 82
+  selector:
+    {{- include "nexus3.selectorLabels" . | nindent 4 }}

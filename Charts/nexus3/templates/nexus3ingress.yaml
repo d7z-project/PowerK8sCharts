@@ -1,0 +1,94 @@
+{{- with .Values.nexus3}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-{{include "nexus3.name" $}}-panel
+  namespace: {{$.Release.Namespace}}
+  labels:
+    {{- include "nexus3.labels" $ | nindent 4 }}
+  {{- with $.Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ $.Values.ingress.class }}
+  tls:
+    - hosts:
+        - {{.panel.host}}
+      {{- with .panel.tlsSecret }}
+      secretName: {{.}}
+      {{- end }}
+  rules:
+    - host: {{.panel.host}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-{{ include "nexus3.name" $ }}
+                port:
+                  name: panel
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-{{include "nexus3.name" $}}-registry
+  namespace: {{$.Release.Namespace}}
+  labels:
+    {{- include "nexus3.labels" $ | nindent 4 }}
+  {{- with $.Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ $.Values.ingress.class }}
+  tls:
+    - hosts:
+        - {{.dockerRegistry.host}}
+      {{- with .dockerRegistry.tlsSecret}}
+      secretName: {{.}}
+      {{- end }}
+  rules:
+    - host: {{.dockerRegistry.host}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-{{ include "nexus3.name" $}}
+                port:
+                  name: docker
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-{{include "nexus3.name" $}}-repos
+  namespace: {{$.Release.Namespace}}
+  labels:
+    {{- include "nexus3.labels" $ | nindent 4 }}
+  {{- with $.Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ $.Values.ingress.class }}
+  tls:
+    - hosts:
+        - {{.reposRegistry.host}}
+      {{- with .reposRegistry.tlsSecret }}
+      secretName: {{.}}
+      {{- end }}
+  rules:
+    - host: {{.reposRegistry.host}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: svc-{{ include "nexus3.name" $}}
+                port:
+                  name: repos
+  {{- end}}

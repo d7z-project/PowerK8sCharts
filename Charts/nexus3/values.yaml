@@ -1,0 +1,32 @@
+image:
+  # docker.io
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+  images:
+    nexus: sonatype/nexus3
+    nginx: library/nginx:1.21.1
+persistence:
+  enabled: true
+  storageClass:
+  capacity: 10Gi
+nexus3:
+  panel:
+    host: nexus.powerk8s.cn
+    tlsSecret:
+  dockerRegistry:
+    enabled: true
+    host: registry.powerk8s.cn
+    tlsSecret:
+  reposRegistry:
+    enabled: true
+    host: repos.powerk8s.cn
+    tlsSecret:
+    mods:
+      rpm: true
+      deb: true
+      maven: true
+ingress:
+  class: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
