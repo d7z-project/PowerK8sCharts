@@ -1,0 +1,20 @@
+image:
+  # docker.io
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+  images:
+    gitea: gitea/gitea
+
+
+
+gitea:
+  server:
+    appName: gitea
+    host: git.powerk8s.cn
+
+ingress:
+  className: nginx
+  annotations:
+  tlsSecret:
+pod:
+  annotations:

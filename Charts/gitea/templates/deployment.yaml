@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "gitea.name" . }}
+  labels:
+    {{- include "gitea.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "gitea.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.pod.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitea.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: gitea-init
+          image: "{{include "gitea.image" .}}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - "cd /workspace && bash /workspace/init.sh"
+          envFrom:
+            - configMapRef:
+                name: "conf-{{include "gitea.name" .}}"
+          volumeMounts:
+            - mountPath: /data
+              name: data
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /workspace
+              name: workspace
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{include "gitea.image" .}}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: "conf-{{include "gitea.name" .}}"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+            - name: ssh
+              containerPort: 2222
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: data
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: workspace
+          configMap:
+            name: "resource-{{include "gitea.name" .}}"

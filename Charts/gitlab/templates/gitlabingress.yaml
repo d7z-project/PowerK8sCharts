@@ -1,0 +1,103 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "ingress-{{include "gitlab.name" .}}"
+  namespace: "{{.Release.Namespace}}"
+  annotations:
+    {{- range  $key, $val := .Values.ingress.annotations.host}}
+    {{$key}}: "{{$val}}"
+    {{- end}}
+spec:
+  ingressClassName: {{.Values.ingress.ingressClass}}
+  tls:
+    - hosts:
+        - "{{.Values.gitlab.host}}"
+      {{- if .Values.gitlab.tlsSecret }}
+      secretName: {{.Values.gitlab.secrets}}
+      {{ end }}
+  rules:
+    - host: "{{.Values.gitlab.host}}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "svc-{{include "gitlab.name" .}}"
+                port:
+                  name: gitlab-web
+---
+{{- if .Values.gitlab.pages.enabled}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "ingress-{{include "gitlab.name" .}}-pages"
+  namespace: "{{.Release.Namespace}}"
+  labels:
+    app: gitlab
+  annotations:
+    {{- range  $key, $val := .Values.ingress.annotations.pages}}
+    {{$key}}: "{{$val}}"
+    {{- end}}
+spec:
+  ingressClassName: {{.Values.ingress.ingressClass}}
+  tls:
+    - hosts:
+        - "{{.Values.gitlab.pages.host}}"
+        - "*.{{.Values.gitlab.pages.host}}"
+      {{- if .Values.gitlab.pages.tlsSecret }}
+      secretName: {{.Values.gitlab.pages.tlsSecret}}
+      {{ end }}
+  rules:
+    - host: {{.Values.gitlab.pages.host}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "svc-{{include "gitlab.name" .}}"
+                port:
+                  name: gitlab-web
+    - host: "*.{{.Values.gitlab.pages.host}}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "svc-{{include "gitlab.name" .}}"
+                port:
+                  name: gitlab-web
+  {{- end }}
+---
+{{- if .Values.gitlab.registry.enabled}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "ingress-{{include "gitlab.name" .}}-registry"
+  namespace: "{{.Release.Namespace}}"
+  annotations:
+    {{- range  $key, $val := .Values.ingress.annotations.registry}}
+    {{$key}}: "{{$val}}"
+    {{- end}}
+spec:
+  ingressClassName: {{.Values.ingress.ingressClass}}
+  tls:
+    - hosts:
+        - "{{.Values.gitlab.registry.host}}"
+      {{- if .Values.gitlab.registry.tlsSecret }}
+      secretName: {{.Values.gitlab.secrets}}
+      {{ end }}
+  rules:
+    - host: "{{.Values.gitlab.registry.host}}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "svc-{{include "gitlab.name" .}}"
+                port:
+                  name: gitlab-web
+{{- end}}

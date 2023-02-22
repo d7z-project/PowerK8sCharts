@@ -1,0 +1,32 @@
+{{- $fullName := include "gitea.name" . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "gitea.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- with  .Values.ingress }}
+  tls:
+    - hosts:
+        - {{$.Values.gitea.server.host}}
+      {{- if .tlsSecret }}
+      secretName: {{ .tlsSecret }}
+      {{- end }}
+  rules:
+    - host: {{$.Values.gitea.server.host}}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  name: http
+  {{- end }}

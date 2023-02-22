@@ -7,6 +7,7 @@ data:
   00-init-database.sh: |
     #!/usr/bin/env bash
     set -e
+    echo "enable pg_trgm"
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-END_SQL
         CREATE EXTENSION pg_trgm;
     END_SQL

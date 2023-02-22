@@ -1,0 +1,52 @@
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{ include "gitlab.name" . }}-data
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: ldap
+spec:
+  {{- if .Values.persistence.storageClass}}
+  storageClassName: {{.Values.persistence.storageClass}}
+  {{- end}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.persistence.capacity.gitlab}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{ include "gitlab.name" . }}-redis
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: ldap
+spec:
+  {{- if .Values.persistence.storageClass}}
+  storageClassName: {{.Values.persistence.storageClass}}
+  {{- end}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.persistence.capacity.redis}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-{{ include "gitlab.name" .}}-postgres
+  namespace: {{.Release.Namespace}}
+  labels:
+    app: ldap
+spec:
+  {{- if .Values.persistence.storageClass}}
+  storageClassName: {{.Values.persistence.storageClass}}
+  {{- end}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.persistence.capacity.postgres}}
+  {{- end}}

@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resource-{{include "gitea.name" .}}
+  namespace: {{.Release.Namespace}}
+data:
+  config.ini: |
+    {{- with .Values.gitea}}
+    APP_NAME = {{.server.appName}}
+    RUN_MODE = prod
+
+    [server]
+    APP_DATA_PATH    = $GIT_CUSTOM
+    DOMAIN           = {{ .server.host }}
+    SSH_DOMAIN       = {{ .server.host }}
+    HTTP_PORT        = 3000
+    ROOT_URL         = "https://{{ .server.host }}/"
+    DISABLE_SSH      = true
+    SSH_PORT         = 22
+    LFS_START_SERVER = false
+
+    [database]
+    PATH = $GIT_CUSTOM/gitea.db
+    DB_TYPE = sqlite3
+    LOG_SQL = false
+
+    [indexer]
+    ISSUE_INDEXER_PATH = $GIT_CUSTOM/indexers/issues.bleve
+
+    [session]
+    PROVIDER_CONFIG = $GIT_CUSTOM/sessions
+
+    [picture]
+    AVATAR_UPLOAD_PATH = $GIT_CUSTOM/avatars
+    REPOSITORY_AVATAR_UPLOAD_PATH = $GIT_CUSTOM/repo-avatars
+
+    [attachment]
+    PATH = $GIT_CUSTOM/attachments
+
+    [log]
+    MODE = console
+    LEVEL = info
+    ROUTER = console
+    ROOT_PATH = $GIT_CUSTOM/log
+
+    [security]
+    INSTALL_LOCK = true
+    SECRET_KEY   = $SECRET_KEY
+    REVERSE_PROXY_LIMIT = 1
+    REVERSE_PROXY_TRUSTED_PROXIES = *
+
+    [service]
+    DISABLE_REGISTRATION = false
+    REQUIRE_SIGNIN_VIEW  = false
+
+    [lfs]
+    PATH = $GIT_CUSTOM/lfs
+  {{- end }}
+  init.sh: |
+    #!/bin/bash
+    set -e
+    if [ ! -f "$GITEA_CUSTOM/conf/app.ini" ]; then
+      bash 00-generate-conf.sh
+    else
+      echo "skip init ."
+    fi
+  00-generate-conf.sh: |
+    export SECRET_KEY=$(gitea generate secret SECRET_KEY)
+    export LFS_START_SERVER=$(gitea generate secret LFS_JWT_SECRET)
+    mkdir -p "$GITEA_CUSTOM/conf"
+    envsubst < config.ini > $GITEA_CUSTOM/conf/app.ini

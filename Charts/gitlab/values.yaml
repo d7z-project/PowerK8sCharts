@@ -5,10 +5,35 @@ image:
   images:
     gitlab: sameersbn/gitlab
     redis: library/redis:6.2
-    postgres: library/postgres:14
-
+    postgres: library/postgres:12.10
+persistence:
+  enabled: true
+  storageClass: ""
+  capacity:
+    gitlab: 100Gi
+    redis: 10Gi
+    postgres: 50Gi
+external_ssh:
+  enabled: true
+  annotations:
+    metallb.universe.tf/allow-shared-ip: public
+  loadBalancerIP: ""
+ingress:
+  ingressClass: "nginx"
+  annotations:
+    host:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    pages:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    registry:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
 gitlab:
   host: gitlab.powerk8s.cn
+  tlsSecret: ""
   secrets:
     defaultPassword: gitlab-root-password
     dbSecrets: long-and-random-alpha-numeric-string
@@ -18,16 +43,13 @@ gitlab:
   pages:
     enabled: true
     host: public.powerk8s.cn
-  registry:
-    enabled: true
-    host: registry.powerk8s.cn
+    tlsSecret: ""
   ldap:
-    enabled: false
-    host: 127.0.0.1
+    enabled: true
+    label: LDAP
+    host: svc-ldap.ldap-system
     port: 389
     uidColum: uid
-    AD: false
-    tls: false
     bindDN: cn=service-account,dc=cluster,dc=local
     bindDNPassword: service-account
     usersDN: ou=people,dc=cluster,dc=local
@@ -35,4 +57,4 @@ gitlab:
 database:
   database: gitlabhq_production
   username: gitlab
-  password: gitlab
+  password: password
