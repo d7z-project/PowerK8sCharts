@@ -16,7 +16,9 @@ spec:
   tls:
     - hosts:
         - "{{.host}}"
-      secretName: "{{.TlsSecret}}"
+      {{- with .tlsSecret }}
+      secretName: "{{ . }}"
+      {{- end}}
   rules:
     - host: {{.host}}
       http:

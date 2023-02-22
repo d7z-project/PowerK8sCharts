@@ -9,6 +9,9 @@ Expand the name of the chart.
 {{- define "gitea.image" -}}
 {{- printf "%s/%s:%s" .Values.image.repository .Values.image.images.gitea .Chart.AppVersion }}
 {{- end }}
+{{- define "gitea.image.redis" -}}
+{{- printf "%s/%s" .Values.image.repository .Values.image.images.redis }}
+{{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.

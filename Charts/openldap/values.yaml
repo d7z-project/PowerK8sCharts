@@ -7,7 +7,7 @@ image:
     lam: ldapaccountmanager/lam:8.1
 
 persistence:
-  enabled: false
+  enabled: true
   storageClass:
   capacity: 10Gi
 
@@ -20,12 +20,14 @@ ldap:
     serviceAccount:
       uid: service-account
       password: service-account
+    ## 这是全局管理员，用于管理系统账户和密码
     admin:
-      uid: admin
-      defaultPassword: admin
+      uid: powerk8s
+      defaultPassword: powerk8s
+    ## 这是默认用户，在本实例中无特殊含义
     defaultUser:
-      uid: default
-      defaultPassword: default
+      uid: powerk8s
+      defaultPassword: powerk8s
     group:
       - id: admin
         describe: 管理员角色
@@ -40,10 +42,10 @@ ldap:
       - id: monitor
         describe: 集群监控管理角色
   lam:
-    enabled: false
+    enabled: true
     password: admin
     ingress:
-      enabled: false
+      enabled: true
       ingressClass: nginx
       host: account.powerk8s.cn
-      TlsSecret: tls-pri
+      tlsSecret:

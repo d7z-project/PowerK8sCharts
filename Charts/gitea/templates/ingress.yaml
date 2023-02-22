@@ -5,7 +5,7 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "gitea.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with .Values.annotations.ingress }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}

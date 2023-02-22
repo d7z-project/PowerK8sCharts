@@ -4,17 +4,48 @@ image:
   pullPolicy: IfNotPresent
   images:
     gitea: gitea/gitea
-
-
-
+    redis: library/redis:6.2
+persistence:
+  enabled: true
+  storageClass:
+  capacity: 50Gi
 gitea:
+  ui:
+    author: " Gitea - Git with a cup of tea "
+    description: " Gitea (Git with a cup of tea) 是一个用 Go 编写的无痛自托管 Git 服务"
+    keywords: "go,git,self-hosted,gitea"
   server:
     appName: gitea
     host: git.powerk8s.cn
+    sshHost: git.powerk8s.cn
+  service:
+    disableRegister: true
+  createAdmin:
+    enabled: false
+    email: root@admin.com
+    username: root
+    password: rootPassword
+  ldap:
+    enabled: true
+    name: LDAP
+    host: svc-ldap.ldap-system
+    port : 389
+    bindDN: cn=service-account,dc=cluster,dc=local
+    bindDNPassword: service-account
+    userBase: ou=peoples,dc=cluster,dc=local
+    userFilter: (&(|(memberOf=cn=admin,ou=groups,dc=cluster,dc=local)(memberOf=cn=develop,ou=groups,dc=cluster,dc=local))(uid=%s))
+    adminFilter: (memberOf=cn=admin,ou=groups,dc=cluster,dc=local)
+    mailColumn: mail
+    userColumn: uid
 
 ingress:
   className: nginx
-  annotations:
   tlsSecret:
-pod:
-  annotations:
+
+annotations:
+  ingress:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  pod:
+  service:
+    ssh_lb:

@@ -1,1 +1,62 @@
+= Helm Charts
 
+
+
+== NFS
+
+[source,bash]
+----
+helm install nfs-server-provisioner Charts/nfs-server-provisioner --create-namespace --namespace nfs-server-provisioner
+----
+
+== PureLB
+
+[source,bash]
+----
+helm install purelb Charts/purelb --create-namespace --namespace purelb
+----
+
+
+[source,yaml]
+----
+apiVersion: purelb.io/v1
+kind: ServiceGroup
+metadata:
+  generation: 1
+  name: default
+  namespace: purelb
+spec:
+  local:
+    v4pool:
+      aggregation: default
+      pool: 10.0.3.25-10.0.3.29
+      subnet: 10.0.3.0/24
+----
+
+== Nginx
+
+[source,bash]
+----
+helm install ingress-nginx Charts/ingress-nginx --create-namespace --namespace ingress-nginx
+----
+
+== CertManager
+
+[source,bash]
+----
+helm install cert-manager Charts/cert-manager --create-namespace --namespace cert-manager
+----
+
+== LDAP
+
+[source,bash]
+----
+helm install ldap Charts/openldap --create-namespace --namespace ldap-system
+----
+
+== Gitea
+
+[source,bash]
+----
+helm install gitea Charts/gitea --create-namespace --namespace gitea-system
+----

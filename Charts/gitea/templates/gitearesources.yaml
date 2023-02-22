@@ -10,14 +10,16 @@ data:
     RUN_MODE = prod
 
     [server]
-    APP_DATA_PATH    = $GIT_CUSTOM
-    DOMAIN           = {{ .server.host }}
-    SSH_DOMAIN       = {{ .server.host }}
-    HTTP_PORT        = 3000
-    ROOT_URL         = "https://{{ .server.host }}/"
-    DISABLE_SSH      = true
-    SSH_PORT         = 22
-    LFS_START_SERVER = false
+    APP_DATA_PATH = $GIT_CUSTOM/data
+    DOMAIN = {{ .server.host }}
+    SSH_DOMAIN = {{ .server.host }}
+    HTTP_PORT = 3000
+    ROOT_URL = "https://{{ .server.host }}/"
+    DISABLE_SSH = false
+    SSH_PORT = 22
+    ENABLE_GZIP = true
+    LFS_START_SERVER = true
+    LFS_JWT_SECRET = $LFS_START_SERVER
 
     [database]
     PATH = $GIT_CUSTOM/gitea.db
@@ -25,42 +27,104 @@ data:
     LOG_SQL = false
 
     [indexer]
+    REPO_INDEXER_ENABLED = true
+    REPO_INDEXER_TYPE = bleve
+    MAX_FILE_SIZE = 1048576
+    REPO_INDEXER_PATH = $GIT_CUSTOM/indexers/repos.bleve
     ISSUE_INDEXER_PATH = $GIT_CUSTOM/indexers/issues.bleve
 
+    [queue]
+    TYPE = "redis"
+    CONN_STR = " redis://127.0.0.1:6379/0"
+    QUEUE_NAME = "_queue"
+    SET_NAME = "_queue"
+
+    [openid]
+    ENABLE_OPENID_SIGNIN = false
+
     [session]
-    PROVIDER_CONFIG = $GIT_CUSTOM/sessions
+    PROVIDER = "redis"
+    PROVIDER_CONFIG = "redis://127.0.0.1:6379/1?pool_size=100&idle_timeout=180s"
+
+    [project]
+    PROJECT_BOARD_BASIC_KANBAN_TYPE = "待办,正在进行,完成"
+    PROJECT_BOARD_BUG_TRIAGE_TYPE = "需要分类,高优先级,低优先级,已关闭"
 
     [picture]
     AVATAR_UPLOAD_PATH = $GIT_CUSTOM/avatars
     REPOSITORY_AVATAR_UPLOAD_PATH = $GIT_CUSTOM/repo-avatars
+    REPOSITORY_AVATAR_FALLBACK = "random"
 
     [attachment]
+    MAX_SIZE = 10
     PATH = $GIT_CUSTOM/attachments
 
     [log]
     MODE = console
     LEVEL = info
-    ROUTER = console
+    DISABLE_ROUTER_LOG = true
     ROOT_PATH = $GIT_CUSTOM/log
 
     [security]
     INSTALL_LOCK = true
-    SECRET_KEY   = $SECRET_KEY
+    SECRET_KEY = $SECRET_KEY
     REVERSE_PROXY_LIMIT = 1
     REVERSE_PROXY_TRUSTED_PROXIES = *
 
     [service]
+    {{- if .service.disableRegister}}
+    DISABLE_REGISTRATION = true
+    {{- else}}
     DISABLE_REGISTRATION = false
-    REQUIRE_SIGNIN_VIEW  = false
-
+    {{- end}}
+    REQUIRE_SIGNIN_VIEW = false
+    CAPTCHA_TYPE = "image"
+    ENABLE_CAPTCHA = true
+    REQUIRE_CAPTCHA_FOR_LOGIN = true
+    REQUIRE_EXTERNAL_REGISTRATION_CAPTCHA = true
+    DEFAULT_KEEP_EMAIL_PRIVATE = true
+    DEFAULT_USER_VISIBILITY = "limited"
+    DEFAULT_ORG_VISIBILITY = "limited"
+    [ui.meta]
+    AUTHOR = "{{.ui.author}}"
+    DESCRIPTION = "{{.ui.description}}"
+    KEYWORDS = "{{.ui.keywords}}"
     [lfs]
     PATH = $GIT_CUSTOM/lfs
-  {{- end }}
+
+    [cron]
+    ENABLED = true
+
+    [metrics]
+    ENABLED = false
+
+    [api]
+    ENABLE_SWAGGER = true
+
+    [oauth2]
+    ENABLE = false
+
+    [i18n]
+    LANGS = "zh-CN"
+    NAMES = "简体中文"
+
+    [actions]
+    ENABLED = true
+
+    [other]
+    SHOW_FOOTER_BRANDING = false
+    SHOW_FOOTER_VERSION = false
+    SHOW_FOOTER_TEMPLATE_LOAD_TIME = false
+
+    {{- end }}
   init.sh: |
     #!/bin/bash
     set -e
     if [ ! -f "$GITEA_CUSTOM/conf/app.ini" ]; then
       bash 00-generate-conf.sh
+      gitea migrate -c $GITEA_CUSTOM/conf/app.ini
+      bash 01-create-user.sh
+      bash 02-create-ldap.sh
     else
       echo "skip init ."
     fi
@@ -69,3 +133,38 @@ data:
     export LFS_START_SERVER=$(gitea generate secret LFS_JWT_SECRET)
     mkdir -p "$GITEA_CUSTOM/conf"
     envsubst < config.ini > $GITEA_CUSTOM/conf/app.ini
+  01-create-user.sh: |
+    #!/bin/bash
+    set -e
+    {{- if .Values.gitea.createAdmin.enabled}}
+    {{- with .Values.gitea.createAdmin}}
+    if [ "$(gitea admin user list --admin | grep '{{.username}}' | wc -l )"  = "0" ]; then
+      echo "user '{{.username}}' not found "
+      gitea admin user create --username '{{.username}}' --password '{{.password}}' \
+        --email '{{.email}}' --admin
+    fi
+    {{- end}}
+    {{- end}}
+  02-create-ldap.sh: |
+    #!/bin/bash
+    set -e
+    {{- if .Values.gitea.ldap.enabled}}
+    {{- with .Values.gitea.ldap}}
+    if [ "$(gitea admin auth list  | grep 'LDAP' | grep '{{.name}}' | wc -l )"  = "0" ]; then
+      echo "LDAP Auth '{{.name}}' not found "
+      gitea admin auth add-ldap --name '{{.name}}' \
+        --security-protocol unencrypted \
+        --host {{.host}} \
+        --port {{.port}} \
+        --bind-dn "{{.bindDN}}" \
+        --bind-password "{{.bindDNPassword}}" \
+        --user-search-base "{{.userBase}}" \
+        --user-filter "{{.userFilter}}" \
+        --admin-filter  "{{.adminFilter}}" \
+        --email-attribute "{{.mailColumn}}" \
+        --username-attribute "{{.userColumn}}" \
+        --attributes-in-bind \
+        --synchronize-users
+    fi
+    {{- end}}
+    {{- end}}
