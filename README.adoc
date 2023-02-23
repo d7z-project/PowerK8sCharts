@@ -1,12 +1,18 @@
 = Helm Charts
 
+== Flannel
 
+[source,bash]
+----
+helm install flannel boot/cni-flannel --create-namespace --namespace flannel-system
+----
 
 == NFS
 
 [source,bash]
 ----
 helm install nfs-server-provisioner Charts/nfs-server-provisioner --create-namespace --namespace nfs-server-provisioner
+helm install nfs-server-provisioner boot/nfs-server-provisioner --create-namespace --namespace nfs-server-provisioner --set persistence.enabled=true --set persistence.nodeName=k8s-master --set persistence.nodeHostPath=/share
 ----
 
 == PureLB
@@ -14,6 +20,7 @@ helm install nfs-server-provisioner Charts/nfs-server-provisioner --create-names
 [source,bash]
 ----
 helm install purelb Charts/purelb --create-namespace --namespace purelb
+helm install purelb boot/purelb --create-namespace --namespace purelb
 ----
 
 
@@ -38,6 +45,7 @@ spec:
 [source,bash]
 ----
 helm install ingress-nginx Charts/ingress-nginx --create-namespace --namespace ingress-nginx
+helm install ingress-nginx boot/ingress-nginx --create-namespace --namespace ingress-nginx
 ----
 
 == CertManager
@@ -45,6 +53,7 @@ helm install ingress-nginx Charts/ingress-nginx --create-namespace --namespace i
 [source,bash]
 ----
 helm install cert-manager Charts/cert-manager --create-namespace --namespace cert-manager
+helm install cert-manager boot/cert-manager --create-namespace --namespace cert-manager
 ----
 
 == LDAP
@@ -52,6 +61,7 @@ helm install cert-manager Charts/cert-manager --create-namespace --namespace cer
 [source,bash]
 ----
 helm install ldap Charts/openldap --create-namespace --namespace ldap-system
+helm install ldap boot/openldap --create-namespace --namespace ldap-system
 ----
 
 == Gitea
@@ -59,4 +69,13 @@ helm install ldap Charts/openldap --create-namespace --namespace ldap-system
 [source,bash]
 ----
 helm install gitea Charts/gitea --create-namespace --namespace gitea-system
+helm install gitea boot/gitea --create-namespace --namespace gitea-system
+----
+
+
+== Nexus
+
+[source,bash]
+----
+helm install nexus3 Charts/nexus3 --create-namespace --namespace nexus3
 ----

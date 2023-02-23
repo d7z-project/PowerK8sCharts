@@ -31,12 +31,12 @@ spec:
               value: "-Xms2703m -Xmx2703m -XX:MaxDirectMemorySize=2703m -Djava.util.prefs.userRoot=${NEXUS_DATA}/javaprefs"
           ports:
             - containerPort: 8081
-              hostPort: 8081
               name: panel
           startupProbe:
             httpGet:
               port: panel
               path: /service/rest/v1/status
+            initialDelaySeconds: 60
             failureThreshold: 60
             periodSeconds: 10
           livenessProbe:

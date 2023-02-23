@@ -35,3 +35,6 @@ spec:
       name: ssh
   selector:
     {{- include "gitea.selectorLabels" . | nindent 4 }}
+  {{ with .Values.ssh.lb_ip }}
+  loadBalancerIP: {{ .}}
+  {{ end }}

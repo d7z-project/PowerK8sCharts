@@ -58,7 +58,7 @@ storageClass:
     - timeo=30
 
   ## ReclaimPolicy field of the class, which can be either Delete or Retain
-  reclaimPolicy: Delete
+  reclaimPolicy: Retain
 
 ## For RBAC support:
 rbac:
@@ -86,16 +86,15 @@ priorityClass:
   value: 5
 
 resources:
-  limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+#  limits:
+#    cpu: 100m
+#    memory: 512Mi
+#  requests:
+#    cpu: 100m
+#    memory: 512Mi
 
 nodeSelector: { }
 
-tolerations:
 
 
 affinity: { }

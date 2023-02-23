@@ -1,0 +1,8 @@
+image:
+  # docker.io
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+
+network:
+  podCIDR: 10.244.0.0/16
+  backEndType: "vxlan"

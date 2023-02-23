@@ -11,24 +11,41 @@ data:
     set -e
     PASSWD_PATH=/nexus/admin.password
     INIT_OK_FILE=/nexus/init.ok
-    exit_func(){
+    NEXUS_URL=$SVC_NEXUS3_PORT_81_TCP_ADDR
+    HEALTH_CMD="curl --connect-timeout 3 $NEXUS_URL/service/rest/v1/status  > /dev/null 2>&1"
+    err_exit_func(){
       exit 1
     }
-    trap 'exit_func' EXIT HUP INT QUIT PIPE TERM
+    fail(){
+      echo "$@" >&2
+      exit 1
+    }
+    trap 'err_exit_func' HUP INT PIPE TERM
+    svc_curl(){
+      svc_path=$1
+      shift
+      curl -b "cookie.txt" -c "/tmp/cookie.txt" "$NEXUS_URL$svc_path" "$@"
+    }
+
     if [ -f "$INIT_OK_FILE" ]; then
       echo "nexus init done ! skip"
       exit 0
     fi
     for (( i = 0; i < 100; i++ )); do
-    echo "Wait Nexus Done ... $i"
-    if [ -f "$PASSWD_PATH" ]; then
-        break
-    fi
+    eval $HEALTH_CMD && {
+      echo  "nexus connected. "
+      break
+    } || echo "nexus connect fail ... Wait $i"
       sleep 5
     done
+    eval $HEALTH_CMD || (echo "nexus connect failed." && exit 1)
     if [ ! -f "$PASSWD_PATH" ]; then
-    echo "admin conf not found!"
+    echo "admin conf not found! "
       exit 1
     fi
-    cat $PASSWD_PATH
+    PASSWORD="$(cat $PASSWD_PATH)"
+    svc_curl "/service/rapture/session" -X POST  \
+      --data-raw "username=YWRtaW4%3D&password=$(echo $PASSWORD | base64 )" >/dev/n  2>&1 || fail "nexus login failed."
+    echo "nexus login success."
+
     exit 0
