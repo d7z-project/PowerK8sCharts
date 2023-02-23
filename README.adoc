@@ -78,4 +78,5 @@ helm install gitea boot/gitea --create-namespace --namespace gitea-system
 [source,bash]
 ----
 helm install nexus3 Charts/nexus3 --create-namespace --namespace nexus3
+helm install nexus3 boot/nexus3 --create-namespace --namespace nexus3
 ----

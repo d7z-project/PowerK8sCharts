@@ -16,7 +16,7 @@ persistence:
 external_ssh:
   enabled: true
   annotations:
-    metallb.universe.tf/allow-shared-ip: public
+    purelb.io/allow-shared-ip: default
   loadBalancerIP: ""
 ingress:
   ingressClass: "nginx"

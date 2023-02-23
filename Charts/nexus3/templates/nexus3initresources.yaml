@@ -8,11 +8,11 @@ metadata:
 data:
   init.sh: |
     #!/bin/bash
-    set -e
+    set -ex
     PASSWD_PATH=/nexus/admin.password
     INIT_OK_FILE=/nexus/init.ok
-    NEXUS_URL=$SVC_NEXUS3_PORT_81_TCP_ADDR
-    HEALTH_CMD="curl --connect-timeout 3 $NEXUS_URL/service/rest/v1/status  > /dev/null 2>&1"
+    NEXUS_URL="$SVC_NEXUS3_PORT_81_TCP_ADDR"
+    HEALTH_CMD="curl --connect-timeout 3 "$NEXUS_URL/service/rest/v1/status"  > /dev/null 2>&1"
     err_exit_func(){
       exit 1
     }
@@ -24,7 +24,7 @@ data:
     svc_curl(){
       svc_path=$1
       shift
-      curl -b "cookie.txt" -c "/tmp/cookie.txt" "$NEXUS_URL$svc_path" "$@"
+      curl -v -b "/tmp/cookie.txt" -c "/tmp/cookie.txt" "$NEXUS_URL$svc_path" "$@"
     }
 
     if [ -f "$INIT_OK_FILE" ]; then
@@ -43,9 +43,41 @@ data:
     echo "admin conf not found! "
       exit 1
     fi
-    PASSWORD="$(cat $PASSWD_PATH)"
-    svc_curl "/service/rapture/session" -X POST  \
-      --data-raw "username=YWRtaW4%3D&password=$(echo $PASSWORD | base64 )" >/dev/n  2>&1 || fail "nexus login failed."
+    PASSWORD="$(cat $PASSWD_PATH | base64)"
+    echo "PASSWORD"
+    svc_curl "/service/rapture/session" -X POST   \
+     --data 'username=YWRtaW4=' \
+      --data "password=$PASSWORD"  >/dev/null  2>&1 || fail "nexus login failed."
     echo "nexus login success."
-
+    {{- with .Values.nexus3.ldap}}
+    LDAP_POST="$( cat << EOF
+    {
+      "name": "{{.name}}",
+      "protocol": "ldap",
+      "useTrustStore": true,
+      "host": "{{.host}}",
+      "port": {{.port}},
+      "searchBase": "{{.searchBase}}",
+      "authScheme": "SIMPLE",
+      "authUsername": "{{.bindDN}}",
+      "connectionTimeoutSeconds": 30,
+      "connectionRetryDelaySeconds": 300,
+      "maxIncidentsCount": 3,
+      "userBaseDn": "{{.userDN}}",
+      "userSubtree": true,
+      "userObjectClass": "inetOrgPerson",
+      "userLdapFilter": "{{.userFilter}}",
+      "userIdAttribute": "{{.uidColum}}",
+      "userRealNameAttribute": "cn",
+      "userEmailAddressAttribute": "{{.mailColum}}",
+      "userPasswordAttribute": "",
+      "ldapGroupsAsRoles": true,
+      "groupType": "dynamic",
+      "groupBaseDn": "{{.groupDN}}",
+      "authPassword": "{{.bindDNPassword}}"
+    }
+    EOF
+    )"
+    {{- end}}
+    svc_curl "/v1/security/ldap" -X POST  -H "Content-Type: application/json" --data "$LDAP_POST"
     exit 0

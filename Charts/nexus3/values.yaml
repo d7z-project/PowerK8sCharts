@@ -25,6 +25,21 @@ nexus3:
       rpm: true
       deb: true
       maven: true
+  defaultPassword: "admin"
+  ldap:
+    enabled: true
+    name: LDAP
+    host: svc-ldap.ldap-system
+    port: 389
+    bindDN: cn=service-account,dc=cluster,dc=local
+    bindDNPassword: service-account
+    searchBase: dc=cluster,dc=local
+    userDN: ou=peoples
+    groupDN: ou=groups
+    userFilter: (|(memberOf=cn=admin,ou=groups,dc=cluster,dc=local)(memberOf=cn=oci,ou=groups,dc=cluster,dc=local)(memberOf=cn=package,ou=groups,dc=cluster,dc=local)(memberOf=cn=library,ou=groups,dc=cluster,dc=local)(memberOf=cn=deploy,ou=groups,dc=cluster,dc=local))
+    uidColum: uid
+    mailColum: mail
+
 ingress:
   class: nginx
   annotations:
