@@ -1,5 +1,7 @@
 = Helm Charts
 
+此仓库专为PowerK8S服务
+
 == Flannel
 
 [source,bash]
@@ -61,7 +63,10 @@ helm install cert-manager boot/cert-manager --create-namespace --namespace cert-
 [source,bash]
 ----
 helm install ldap Charts/openldap --create-namespace --namespace ldap-system
-helm install ldap boot/openldap --create-namespace --namespace ldap-system
+
+helm show values boot/openldap > openldap-values.yaml
+nano openldap-values.yaml
+helm install -f openldap-values.yaml ldap boot/openldap --create-namespace --namespace ldap-system
 ----
 
 == Gitea
@@ -69,7 +74,10 @@ helm install ldap boot/openldap --create-namespace --namespace ldap-system
 [source,bash]
 ----
 helm install gitea Charts/gitea --create-namespace --namespace gitea-system
-helm install gitea boot/gitea --create-namespace --namespace gitea-system
+
+helm show values boot/gitea > gitea-values.yaml
+nano gitea-values.yaml
+helm install -f gitea-values.yaml gitea boot/gitea --create-namespace --namespace gitea-system
 ----
 
 

@@ -37,7 +37,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 provisioner: kubernetes.io/no-provisioner
-reclaimPolicy: Delete
+reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
 ---
 apiVersion: v1

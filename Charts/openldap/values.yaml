@@ -45,7 +45,7 @@ ldap:
     enabled: true
     password: admin
     ingress:
-      enabled: true
+      enabled: false
       ingressClass: nginx
       host: account.powerk8s.cn
       tlsSecret:
