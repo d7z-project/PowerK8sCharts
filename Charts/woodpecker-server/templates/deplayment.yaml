@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "woodpecker-server.name" . }}
+  namespace: {{.Release.Namespace}}
+  labels:
+      {{- include "woodpecker-server.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "woodpecker-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "woodpecker-server.selectorLabels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: 'true'
+    spec:
+      containers:
+        - image: "{{.Values.image.repository}}/{{.Values.image.images.woodpeckerServer}}:{{.Chart.AppVersion}}"
+          imagePullPolicy: {{.Values.image.pullPolicy}}
+          name: {{include "woodpecker-server.name" . }}
+          envFrom:
+            - configMapRef:
+                name: conf-{{include "woodpecker-server.name" . }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: http
+            - containerPort: 9000
+              protocol: TCP
+              name: grpc
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/woodpecker
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled}}
+          persistentVolumeClaim:
+            claimName: "{{- include "woodpecker-server.name" . -}}"
+          {{- else}}
+          emptyDir: {}
+          {{- end}}

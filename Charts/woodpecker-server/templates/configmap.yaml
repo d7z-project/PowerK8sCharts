@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conf-{{include "woodpecker-server.name" .}}
+  namespace: {{.Release.Namespace}}
+data:
+  WOODPECKER_HOST: https://{{ .Values.ingress.host }}
+  WOODPECKER_SERVER_ADDR: ":8080"
+  WOODPECKER_OPEN: "true"
+  WOODPECKER_GRPC_ADDR: ":9000"
+  WOODPECKER_DEFAULT_CLONE_IMAGE: "{{.Values.image.repository}}/{{.Values.image.images.cloneImage}}"
+  WOODPECKER_AGENT_SECRET: "{{.Values.woodpecker.agentSecret}}"
+  WOODPECKER_GITEA: "true"
+  WOODPECKER_GITEA_URL: "{{.Values.woodpecker.giteaUrl}}"
+  WOODPECKER_GITEA_CLIENT: "{{.Values.woodpecker.giteaOAuthID}}"
+  WOODPECKER_GITEA_SECRET: "{{.Values.woodpecker.giteaOAuthSecret}}"

@@ -1,0 +1,37 @@
+# Default values for woodpecker-server.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+image:
+  repository: boot.powerk8s.cn
+  pullPolicy: IfNotPresent
+  images:
+    woodpeckerServer: woodpeckerci/woodpecker-server
+    cloneImage: woodpeckerci/plugin-git:2.0.3
+
+woodpecker:
+  # openssl rand -hex 32
+  agentSecret: please_replace_it_if_prod_mode
+  # 参考 https://woodpecker-ci.org/docs/administration/vcs/gitea#configuration
+  giteaUrl: https://git.powerk8s.cn
+  giteaOAuthID: ""
+  giteaOAuthSecret: ""
+
+persistence:
+  enabled: true
+  storageClass:
+  capacity: 10Gi
+
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  className: "nginx"
+  host: ci.powerk8s.cn
+  tlsSecret: ""
+
+service:
+  agent:
+    enabled: true
+    extraIP:
+    annotations:
+      purelb.io/allow-shared-ip: default

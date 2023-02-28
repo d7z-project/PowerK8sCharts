@@ -1,0 +1,16 @@
+{{- if .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "{{- include "woodpecker-server.name" . }}"
+  namespace: {{.Release.Namespace}}
+spec:
+  {{- if .Values.persistence.storageClass}}
+  storageClassName: {{.Values.persistence.storageClass}}
+  {{- end}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.persistence.capacity}}
+  {{- end}}

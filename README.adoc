@@ -88,3 +88,12 @@ helm install -f gitea-values.yaml gitea boot/gitea --create-namespace --namespac
 helm install nexus3 Charts/nexus3 --create-namespace --namespace nexus3
 helm install nexus3 boot/nexus3 --create-namespace --namespace nexus3
 ----
+
+== woodpecker
+
+[source,bash]
+----
+helm show values boot/woodpecker-server > woodpecker-server-values.yaml
+nano woodpecker-server-values.yaml
+helm install -f woodpecker-server-values.yaml woodpecker-server boot/woodpecker-server --create-namespace --namespace woodpecker-server
+----
