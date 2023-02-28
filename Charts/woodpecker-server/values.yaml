@@ -15,6 +15,7 @@ woodpecker:
   giteaUrl: https://git.powerk8s.cn
   giteaOAuthID: ""
   giteaOAuthSecret: ""
+  selfRepository: false
 
 persistence:
   enabled: true

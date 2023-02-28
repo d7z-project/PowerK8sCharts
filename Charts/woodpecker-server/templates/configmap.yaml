@@ -8,7 +8,11 @@ data:
   WOODPECKER_SERVER_ADDR: ":8080"
   WOODPECKER_OPEN: "true"
   WOODPECKER_GRPC_ADDR: ":9000"
+  {{- if .Values.woodpecker.selfRepository }}
   WOODPECKER_DEFAULT_CLONE_IMAGE: "{{.Values.image.repository}}/{{.Values.image.images.cloneImage}}"
+  {{- else}}
+  WOODPECKER_DEFAULT_CLONE_IMAGE: "docker.io/{{.Values.image.images.cloneImage}}"
+  {{- end }}
   WOODPECKER_AGENT_SECRET: "{{.Values.woodpecker.agentSecret}}"
   WOODPECKER_GITEA: "true"
   WOODPECKER_GITEA_URL: "{{.Values.woodpecker.giteaUrl}}"
